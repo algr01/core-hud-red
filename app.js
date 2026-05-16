@@ -1,42 +1,44 @@
 const output = document.getElementById('output');
 const input = document.getElementById('user-input');
+const aiAgent = new Worker('ai-worker.js');
 
-// Función para imprimir en pantalla
+aiAgent.onmessage = (e) => {
+  if (e.data.type === 'log') print(e.data.data, 'system');
+  else if (e.data.type === 'result') {
+    const res = `RESPUESTA AGENTE: ${e.data.data}`;
+    print(res, 'system');
+    saveLog(res); // Guarda la respuesta del agente
+  }
+};
+
 function print(text, type = 'default') {
   const p = document.createElement('p');
   p.textContent = `> ${text}`;
-  if (type === 'system') p.style.fontWeight = 'bold';
+  if (type === 'system') p.style.color = '#ff4444';
   output.appendChild(p);
   output.scrollTop = output.scrollHeight;
 }
 
-// Manejador de comandos
 input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    const cmd = input.value.toLowerCase().trim();
-    print(cmd, 'user');
-    processCommand(cmd);
+  if (e.key === 'Enter' && input.value.trim() !== '') {
+    const val = input.value;
+    print(val, 'user');
+    saveLog(`USUARIO: ${val}`); // Guarda el comando del usuario
+    
+    if (val.toLowerCase() === 'history') {
+      getLogs((logs) => {
+        print('--- HISTORIAL DE MEMORIA ---', 'system');
+        logs.forEach(log => print(`[${log.timestamp}] ${log.text}`));
+      });
+    } else if (val.toLowerCase() === 'clear') {
+      output.innerHTML = '';
+    } else {
+      aiAgent.postMessage({ command: 'PROCESS_TASK', payload: val });
+    }
     input.value = '';
   }
 });
 
-function processCommand(cmd) {
-  if (cmd === 'help') {
-    print('Comandos disponibles: help, status, clear, deploy');
-  } else if (cmd === 'status') {
-    print('Sistema: ONLINE | Agentes: 0 | Inferencia: LOCAL_READY', 'system');
-  } else if (cmd === 'clear') {
-    output.innerHTML = '';
-  } else if (cmd === 'deploy') {
-    print('Iniciando despliegue de agente alfa...', 'system');
-    setTimeout(() => print('Error: No se ha configurado un modelo de IA aún.'), 1000);
-  } else {
-    print('Comando no reconocido. Escribe "help".');
-  }
-}
-
-// Mensaje de inicio
 window.onload = () => {
-  print('CORE-HUD RED v1.0.0 cargado.', 'system');
-  print('Bienvenido, Mensajero. Escribe "help" para comenzar.');
+  print('CORE-HUD RED v1.2.0 (MEMORIA ACTIVA) ONLINE.', 'system');
 };
