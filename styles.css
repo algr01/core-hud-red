@@ -80,3 +80,19 @@ input {
 #output::-webkit-scrollbar-thumb {
   background: var(--neon-red);
 }
+#activity-monitor {
+  height: 150px;
+  border: 1px dashed var(--neon-red);
+  margin-bottom: 15px;
+  padding: 10px;
+  font-size: 10px;
+  overflow: hidden;
+  position: relative;
+}
+#activity-monitor::after {
+  content: "AGENT_MONITOR_V1";
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  color: rgba(255, 0, 0, 0.3);
+}

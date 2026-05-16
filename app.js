@@ -42,3 +42,23 @@ input.addEventListener('keydown', (e) => {
 window.onload = () => {
   print('CORE-HUD RED v1.2.0 (MEMORIA ACTIVA) ONLINE.', 'system');
 };
+async function updateTelemetry() {
+  if ('getBattery' in navigator) {
+    const battery = await navigator.getBattery();
+    const level = Math.round(battery.level * 100);
+    const charging = battery.charging ? '[CARGANDO]' : '[DESCARGANDO]';
+    print(`TELEMETRÍA: Batería al ${level}% ${charging}`, 'system');
+  }
+  
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (connection) {
+    print(`RED: Tipo: ${connection.effectiveType} | Latencia: ${connection.rtt}ms`, 'system');
+  }
+}
+
+// Modificamos el comando 'status' en la función processCommand
+// Busca donde dice else if (cmd === 'status') y cámbialo por esto:
+else if (cmd === 'status') {
+  updateTelemetry();
+  print('Sistema: ONLINE | Memoria: LocalDB activa', 'system');
+}
